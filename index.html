@@ -824,8 +824,8 @@
   .cards-order-btn{animation-delay:.36s;}
   @media (prefers-reduced-motion:reduce){.cards-promo,.cards-note,.cards-order-btn,.cards-viewport,.cards-track .card-col{animation:none;}}
   .cards-note{text-align:center;font-size:14px;font-weight:700;color:#444;line-height:1.8;margin:6px -4px 16px;}
-  .cards-viewport{position:relative;margin:0 -4px;}
-  .cards-track{display:flex;direction:ltr;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px;}
+  .cards-viewport{position:relative;margin:0 -16px 0 -4px;}
+  .cards-track{display:flex;direction:ltr;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px 16px 4px 4px;}
   .cards-track::-webkit-scrollbar{display:none;}
   .card-col{flex:0 0 82%;scroll-snap-align:start;display:flex;flex-direction:column;gap:3px;}
   .card-col img{width:100%;aspect-ratio:1050/600;object-fit:cover;display:block;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.18);background:#fff;}
@@ -1608,9 +1608,7 @@ function renderCards(container){
     col.innerHTML = `<img src="${CARD_IMAGES[i]}" alt="نموذج كرت ${i/2+1} - الوجه الأمامي" draggable="false"><img src="${CARD_IMAGES[i+1]}" alt="نموذج كرت ${i/2+1} - الوجه الخلفي" draggable="false">`;
     track.appendChild(col);
   }
-  const fl = document.createElement('div'); fl.className = 'cards-fade left';
-  const fr = document.createElement('div'); fr.className = 'cards-fade right';
-  view.appendChild(track); view.appendChild(fl); view.appendChild(fr);
+  view.appendChild(track);
   // سحب بالماوس على الكمبيوتر
   let mDown = false, mStartX = 0, mStartScroll = 0;
   track.addEventListener('mousedown', (e) => { mDown = true; mStartX = e.clientX; mStartScroll = track.scrollLeft; track.classList.add('dragging'); e.preventDefault(); });
@@ -1627,17 +1625,6 @@ function renderCards(container){
   }, { passive:false });
   container.appendChild(view);
 
-  let fadesReady = false;
-  function updateFades(){
-    const max = track.scrollWidth - track.clientWidth;
-    if (!fadesReady){ fl.classList.remove('show'); fr.classList.add('show'); return; }
-    fl.classList.toggle('show', track.scrollLeft > 4);
-    fr.classList.toggle('show', track.scrollLeft < max - 4);
-  }
-  setTimeout(() => { track.scrollLeft = 0; fadesReady = true; updateFades(); }, 750);
-  track.addEventListener('scroll', updateFades, { passive:true });
-  window.addEventListener('resize', updateFades);
-  requestAnimationFrame(updateFades);
 
   const btn = document.createElement('a');
   btn.className = 'cards-order-btn';
@@ -1991,7 +1978,6 @@ function renderChapter(year, sem){
         columnsHeader.className = 'columns-header';
         columnsHeader.innerHTML = `
           <span class="col-name">اسم الأداة</span>
-          <span class="col-price">يتراوح سعرها ب:</span>
         `;
         sectionEl.appendChild(columnsHeader);
       }
@@ -2016,16 +2002,16 @@ function renderChapter(year, sem){
           return;
         }
 
-        const stacked = item.notePosition === 'below';
-        const priceHtml = buildPriceHtml(item);
+        const shanatNote = (!item.note && item.priceNote === '25 شانة تقريبا') ? '(25 شانة تقريبا)' : '';
+        const itemNote = item.note || shanatNote;
+        const stacked = item.notePosition === 'below' || !!shanatNote;
         const row = document.createElement('div');
         row.className = 'item-row' + (item.sub ? ' sub-item' : '');
         row.innerHTML = `
           <div class="item-name-wrap${stacked ? ' stacked' : ''}">
             <span class="item-name">${item.name}</span>
-            ${item.note ? `<span class="item-note">${item.note}</span>` : ''}
+            ${itemNote ? `<span class="item-note">${itemNote}</span>` : ''}
           </div>
-          <div class="item-price">${priceHtml}</div>
         `;
         sectionEl.appendChild(row);
       });
