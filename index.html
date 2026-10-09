@@ -814,7 +814,8 @@
   .gpa-row{animation:cardsRise .3s cubic-bezier(.2,.7,.2,1) both;}
   @media (prefers-reduced-motion:reduce){:where(#gpa-content > *),.gpa-row{animation:none;}}
   @keyframes cardsRise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
-  @keyframes cardPop{from{opacity:0;transform:translateY(24px) scale(.94);}to{opacity:1;transform:none;}}
+  @keyframes cardPop{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
+  @keyframes cardsPopCols{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
   .cards-promo,.cards-note,.cards-order-btn{animation:cardsRise .38s cubic-bezier(.2,.7,.2,1) both;}
   .cards-note{animation-delay:.07s;}
   .cards-viewport{animation:cardsRise .38s cubic-bezier(.2,.7,.2,1) .12s both;}
@@ -1626,11 +1627,14 @@ function renderCards(container){
   }, { passive:false });
   container.appendChild(view);
 
+  let fadesReady = false;
   function updateFades(){
     const max = track.scrollWidth - track.clientWidth;
+    if (!fadesReady){ fl.classList.remove('show'); fr.classList.add('show'); return; }
     fl.classList.toggle('show', track.scrollLeft > 4);
     fr.classList.toggle('show', track.scrollLeft < max - 4);
   }
+  setTimeout(() => { track.scrollLeft = 0; fadesReady = true; updateFades(); }, 750);
   track.addEventListener('scroll', updateFades, { passive:true });
   window.addEventListener('resize', updateFades);
   requestAnimationFrame(updateFades);
