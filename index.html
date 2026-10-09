@@ -581,6 +581,7 @@
     margin:10px 0 6px;
   }
   .subheader.blue{color:var(--blue);}
+  .num{color:var(--blue);font-weight:800;unicode-bidi:isolate;direction:ltr;display:inline-block;}
   .item-row{
     display:flex;
     align-items:center;
@@ -1923,6 +1924,11 @@ function selectSemester(sem){
 }
 
 /* ================== عرض محتوى الفصل ================== */
+/* أرقام إنجليزية دائماً، وباللون الأزرق داخل الأسماء والملاحظات */
+const AR_DIGITS = '٠١٢٣٤٥٦٧٨٩';
+function enDigits(t){ return String(t).replace(/[٠-٩]/g, d => AR_DIGITS.indexOf(d)); }
+function nf(t){ return enDigits(t).replace(/^(\s*)([0-9]+)(\s*[-–])/, (m, a, n, d) => `${a}<span class="num">${n}</span>${d}`); }
+
 function renderChapter(year, sem){
   const container = document.getElementById('content-area');
   container.innerHTML = '';
@@ -1957,7 +1963,7 @@ function renderChapter(year, sem){
 
     const titleEl = document.createElement('div');
     titleEl.className = 'chapter-title';
-    titleEl.textContent = data.title;
+    titleEl.textContent = enDigits(data.title);
     container.appendChild(titleEl);
 
     data.sections.forEach((section, sIdx) => {
@@ -1971,7 +1977,7 @@ function renderChapter(year, sem){
       if (section.name){
         const sTitle = document.createElement('div');
         sTitle.className = 'section-title';
-        sTitle.textContent = section.name;
+        sTitle.textContent = enDigits(section.name);
         sectionEl.appendChild(sTitle);
 
         const columnsHeader = document.createElement('div');
@@ -1986,7 +1992,7 @@ function renderChapter(year, sem){
         if (item.subheader){
           const sub = document.createElement('div');
           sub.className = 'subheader' + (item.blue ? ' blue' : '');
-          sub.textContent = item.subheader;
+          sub.innerHTML = nf(item.subheader);
           sectionEl.appendChild(sub);
           return;
         }
@@ -1995,22 +2001,21 @@ function renderChapter(year, sem){
           const row = document.createElement('div');
           row.className = 'note-only-row';
           row.innerHTML = `
-            <span class="item-name">${item.name}</span>
-            ${item.note ? `<span class="item-note-edge">${item.note}</span>` : ''}
+            <span class="item-name">${nf(item.name)}</span>
+            ${item.note ? `<span class="item-note-edge">${enDigits(item.note)}</span>` : ''}
           `;
           sectionEl.appendChild(row);
           return;
         }
 
-        const shanatNote = (!item.note && item.priceNote === '25 شانة تقريبا') ? '(25 شانة تقريبا)' : '';
-        const itemNote = item.note || shanatNote;
-        const stacked = item.notePosition === 'below' || !!shanatNote;
+        const itemNote = item.note;
+        const stacked = item.notePosition === 'below';
         const row = document.createElement('div');
         row.className = 'item-row' + (item.sub ? ' sub-item' : '');
         row.innerHTML = `
           <div class="item-name-wrap${stacked ? ' stacked' : ''}">
-            <span class="item-name">${item.name}</span>
-            ${itemNote ? `<span class="item-note">${itemNote}</span>` : ''}
+            <span class="item-name">${nf(item.name)}</span>
+            ${itemNote ? `<span class="item-note">${enDigits(itemNote)}</span>` : ''}
           </div>
         `;
         sectionEl.appendChild(row);
